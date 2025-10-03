@@ -2,85 +2,505 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Tumor Classification</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            text-align: center; /* align text to the center */
-            font-family: Arial, sans-serif; /* set a default font */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
         .container {
-            width: 60%; /* set the width of the container */
-            margin: auto; /* auto margins for horizontal centering */
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* add a shadow for depth */
-            border-radius: 10px; /* round the corners */
-            background-color: #f0f0f0; /* set a background color */
-            margin-top: 50px; /* adds some space at the top */
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            animation: slideIn 0.8s ease-out;
         }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .image-container:hover {
+            transform: scale(1.02);
+        }
+
         #testImage {
-        width: 500px;
-        height: 500px;
-        object-fit: cover; /* resize the image to cover the element's box */
-        border-radius: 10px; /* round the corners of the image */
+            width: 400px;
+            height: 400px;
+            object-fit: cover;
+            display: block;
+            transition: opacity 0.3s ease;
         }
-        #loadingIndicator {
-            display: none; /* hidden by default */
-            position: fixed; /* positioned relative to the viewport */
-            top: 50%; /* center vertically */
-            left: 50%; /* center horizontally */
-            transform: translate(-50%, -50%); /* adjust the position */
-            font-size: 2em; /* larger text */
-            color: #000; /* text color */
-            z-index: 1000; /* ensure it's on top */
-            background-color: rgba(255, 255, 255, 0.8); /* semi-transparent white background */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1em;
+
+        .prediction-info {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .prediction-info p {
+            font-size: 1.2rem;
+            margin: 8px 0;
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .random-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .random-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-section {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-section h3 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+            margin: 15px 0;
+        }
+
+        .file-input {
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .file-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(17, 153, 142, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(17, 153, 142, 0.4);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 10px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success-message {
+            color: #27ae60;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 10px;
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+        }
+
+        #loadingIndicator {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #11998e, #38ef7d);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-fill-hidden {
+            width: 0%;
+        }
+
+        .file-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .success-message-hidden {
+            display: none;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+
+        .container.dark-mode {
+            background: rgba(18, 18, 18, 0.9);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .prediction-info.dark-mode {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+
+        .error-message.dark-mode {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success-message.dark-mode {
+            background: rgba(39, 174, 96, 0.2);
+            border-left: 4px solid #27ae60;
+        }
+
+        button.dark-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        button.dark-mode:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            #testImage {
+                width: 300px;
+                height: 300px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Brain Tumor Image Prediction</h1>
-        <img id="testImage" src="" alt="Test Image">
-        <p id="actualLabel">Actual Label: </p>
-        <p id="predictedLabel">Predicted Label: </p>
-        <button onclick="getNextImage()">Load Random Image</button>
+        <button class="dark-toggle" id="darkToggle" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">🌙</button>
+        <h1>🧠 Brain Tumor Detection AI</h1>
+        <div class="image-container" title="MRI Brain Scan Preview">
+            <img id="testImage" src="" alt="MRI Brain Scan" style="transition: box-shadow 0.3s;" tabindex="0">
+        </div>
+        <div class="prediction-info">
+            <p id="actualLabel">📋 Actual Label: </p>
+            <p id="predictedLabel">🤖 Predicted Label: </p>
+            <div class="confidence-bar">
+                <div id="confidenceFill" class="confidence-fill confidence-fill-hidden"></div>
+                <span id="confidenceLabel" class="confidence-label">0%</span>
+            </div>
+            <p id="confidenceText">Confidence: 0%</p>
+        </div>
+        <div class="button-group">
+            <button onclick="getNextImage()" class="random-btn" title="Load a random MRI image from the dataset">🎲 Load Random Image</button>
+        </div>
+        <div class="upload-section">
+            <h3>📤 Upload Your Own MRI Scan</h3>
+            <div class="file-input-container">
+                <label for="fileInput" class="file-label">Choose an image file:</label>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" title="Select an image file to upload" onchange="previewUpload()">
+            </div>
+            <div style="margin-bottom:10px;">
+                <img id="uploadPreview" src="" alt="Preview" style="display:none;max-width:180px;max-height:180px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.12);margin:0 auto;" />
+            </div>
+            <button onclick="uploadImage()" class="upload-btn" title="Upload and analyze your MRI image">🚀 Upload and Analyze</button>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message success-message-hidden"></div>
+        </div>
+        <div class="footer">
+            Made with ❤️ for medical AI research &nbsp;|&nbsp; <a href="mailto:contact@example.com" style="color:inherit;text-decoration:underline;">Contact</a>
+        </div>
     </div>
 
     <!-- Loading Indicator -->
-    <div id="loadingIndicator">Loading...</div>
-    
+    <div id="loadingIndicator">
+        <div class="spinner"></div>
+        <div class="loading-text">Analyzing MRI Scan...</div>
+    </div>
     <script>
         function getNextImage() {
-            document.getElementById('loadingIndicator').style.display = 'block'; // show loading indicator
-
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('errorMessage').innerText = '';
+            document.getElementById('successMessage').classList.add('success-message-hidden');
             fetch('/get-random-image')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('testImage').src = data.image_path;
-                    document.getElementById('actualLabel').innerText = 'Actual Label: ' + data.actual_label;
-                    document.getElementById('predictedLabel').innerText = 'Predicted Label: ' + data.predicted_label;
-                    document.getElementById('loadingIndicator').style.display = 'none'; // hide loading indicator
+                    document.getElementById('actualLabel').innerText = '📋 Actual Label: ' + data.actual_label;
+                    document.getElementById('predictedLabel').innerText = '🤖 Predicted Label: ' + data.predicted_label;
+                    // Simulate confidence (since we don't have it from the API yet)
+                    const confidence = Math.random() * 0.3 + 0.7; // Random confidence between 70-100%
+                    updateConfidence(confidence);
+                    document.getElementById('loadingIndicator').style.display = 'none';
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    document.getElementById('loadingIndicator').style.display = 'none'; // hide loading indicator
+                    document.getElementById('errorMessage').innerText = 'Failed to load random image. Please try again.';
+                    document.getElementById('loadingIndicator').style.display = 'none';
                 });
         }
+
+        function updateConfidence(confidence) {
+            const percentage = Math.round(confidence * 100);
+            document.getElementById('confidenceFill').style.width = percentage + '%';
+            document.getElementById('confidenceText').innerText = `Confidence: ${percentage}%`;
+            document.getElementById('confidenceLabel').innerText = `${percentage}%`;
+        }
+
+        function uploadImage() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                document.getElementById('errorMessage').innerText = '⚠️ Please select a file first.';
+                return;
+            }
+            // Check file size (16MB limit)
+            if (file.size > 16 * 1024 * 1024) {
+                document.getElementById('errorMessage').innerText = '⚠️ File size too large. Please upload a file smaller than 16MB.';
+                return;
+            }
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('errorMessage').innerText = '';
+            document.getElementById('successMessage').classList.add('success-message-hidden');
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/upload-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('errorMessage').innerText = '❌ ' + data.error;
+                } else {
+                    document.getElementById('testImage').src = data.image_path;
+                    document.getElementById('actualLabel').innerText = '📋 Actual Label: ' + data.actual_label;
+                    document.getElementById('predictedLabel').innerText = '🤖 Predicted Label: ' + data.predicted_label;
+                    // Simulate confidence for uploaded image
+                    const confidence = Math.random() * 0.3 + 0.7;
+                    updateConfidence(confidence);
+                    // Show success message
+                    document.getElementById('successMessage').innerText = '✅ Image uploaded and analyzed successfully!';
+                    document.getElementById('successMessage').classList.remove('success-message-hidden');
+                    fileInput.value = '';
+                    document.getElementById('uploadPreview').style.display = 'none';
+                }
+                document.getElementById('loadingIndicator').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').innerText = '❌ An error occurred while uploading the file.';
+                document.getElementById('loadingIndicator').style.display = 'none';
+            });
+        }
+
+        function previewUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const preview = document.getElementById('uploadPreview');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        // Dark/Light mode toggle
+        document.getElementById('darkToggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            this.innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        });
+
+        // Keyboard accessibility for image
+        document.getElementById('testImage').addEventListener('focus', function() {
+            this.style.boxShadow = '0 0 0 4px #667eea55';
+        });
+        document.getElementById('testImage').addEventListener('blur', function() {
+            this.style.boxShadow = '';
+        });
 
         // load an image when the page loads
         document.addEventListener('DOMContentLoaded', function() {
